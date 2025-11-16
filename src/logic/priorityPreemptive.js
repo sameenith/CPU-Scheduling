@@ -1,0 +1,146 @@
+/**
+ * Calculates Priority (Preemptive) scheduling.
+ * This is an "instant" calculation, not a live simulation.
+ * @param {Array} processes - A list of process objects.
+ * @returns {Object} - Contains gantt chart data, process stats, and averages.
+ */
+export const calculatePriorityPreemptive = (processes) => {
+  // 1. Create deep copies with 'remaining' time
+  let simProcesses = processes.map(p => ({
+    ...p,
+    pid: p.id.toString().slice(-4),
+    remainingBurst: p.burstTime,
+    hasArrived: false,
+  }));
+
+  const ganttChart = [];
+  let processStats = simProcesses.map(p => ({ ...p, waitingTime: 0, startTime: -1 }));
+  
+  let currentTime = 0;
+  let readyQueue = [];
+  let runningProcess = null;
+  let completedCount = 0;
+
+  // Loop until all processes are completed
+  while (completedCount < processes.length) {
+    
+    // 2. Add newly arrived processes to the ready queue
+    simProcesses.forEach(p => {
+      if (!p.hasArrived && p.arrivalTime <= currentTime) {
+        p.hasArrived = true;
+        readyQueue.push(p);
+      }
+    });
+
+    // --- 👇 THIS IS THE KEY PREEMPTION LOGIC ---
+    // 3. Check for Preemption
+    if (runningProcess) {
+      // Sort ready queue by *priority*
+      readyQueue.sort((a, b) => a.priority - b.priority);
+      
+      if (readyQueue.length > 0 && readyQueue[0].priority < runningProcess.priority) {
+        // Preempt the running process
+        readyQueue.push(runningProcess);
+        runningProcess = null;
+      }
+    }
+    // --- 👆 END OF PREEMPTION LOGIC ---
+    
+    // 4. Check if CPU is IDLE
+    if (runningProcess === null) {
+      if (readyQueue.length > 0) {
+        // --- 👇 THIS IS THE KEY SCHEDULING LOGIC ---
+        // Sort ready queue by *priority*
+        readyQueue.sort((a, b) => a.priority - b.priority);
+        // --- 👆 END OF SCHEDULING LOGIC ---
+        
+        // Get the highest priority job
+        runningProcess = readyQueue.shift();
+        
+        // Set start time if it's the first time running
+        const statIndex = processStats.findIndex(p => p.id === runningProcess.id);
+        if (processStats[statIndex].startTime === -1) {
+          processStats[statIndex].startTime = currentTime;
+        }
+      }
+    }
+    
+    // 5. Update Gantt Chart
+    const currentPID = runningProcess ? `P${runningProcess.pid}` : 'IDLE';
+    const lastBlock = ganttChart[ganttChart.length - 1];
+
+    if (lastBlock && lastBlock.pid === currentPID) {
+      lastBlock.end = currentTime + 1;
+      lastBlock.duration = lastBlock.end - lastBlock.start;
+    } else {
+      ganttChart.push({
+        pid: currentPID,
+        start: currentTime,
+        end: currentTime + 1,
+        duration: 1,
+      });
+    }
+
+    // 6. Update Running Process
+    if (runningProcess) {
+      runningProcess.remainingBurst -= 1;
+
+      // Check for process completion
+      if (runningProcess.remainingBurst <= 0) {
+        const completionTime = currentTime + 1;
+        const statIndex = processStats.findIndex(p => p.id === runningProcess.id);
+        
+        processStats[statIndex].completionTime = completionTime;
+        processStats[statIndex].turnaroundTime = completionTime - processStats[statIndex].arrivalTime;
+        processStats[statIndex].waitingTime = processStats[statIndex].turnaroundTime - processStats[statIndex].burstTime;
+        
+        runningProcess = null; // CPU is now idle
+        completedCount++; // Mark one process as done
+      }
+    }
+    
+    // 7. Update waiting time for all processes in ready queue
+    readyQueue.forEach(proc => {
+      const statIndex = processStats.findIndex(p => p.id === proc.id);
+      processStats[statIndex].waitingTime += 1;
+    });
+
+    // 8. Increment time
+    currentTime++;
+
+    // Safety break
+    if (currentTime > 20000) {
+       console.error("Priority Preemptive Sim stuck in a loop");
+       break;
+    }
+    
+    // Jump time forward if idle
+    if (runningProcess === null && readyQueue.length === 0 && completedCount < processes.length) {
+       const nextArrivalTime = Math.min(...simProcesses.filter(p => !p.hasArrived).map(p => p.arrivalTime));
+       if (nextArrivalTime > currentTime && nextArrivalTime !== Infinity) {
+           ganttChart.push({
+             pid: 'IDLE',
+             start: currentTime,
+             end: nextArrivalTime,
+             duration: nextArrivalTime - currentTime,
+           });
+           currentTime = nextArrivalTime; // Jump time forward
+       }
+    }
+  }
+
+  // 9. Calculate averages
+  const totalWT = processStats.reduce((sum, p) => sum + p.waitingTime, 0);
+  const totalTT = processStats.reduce((sum, p) => sum + p.turnaroundTime, 0);
+  const avgWT = (totalWT / processes.length) || 0;
+  const avgTT = (totalTT / processes.length) || 0;
+
+  return {
+    ganttChart,
+    processStats,
+    averages: {
+      waitingTime: avgWT.toFixed(2),
+      turnaroundTime: avgTT.toFixed(2),
+    },
+  };
+};
