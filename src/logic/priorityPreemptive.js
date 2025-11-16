@@ -1,9 +1,3 @@
-/**
- * Calculates Priority (Preemptive) scheduling.
- * This is an "instant" calculation, not a live simulation.
- * @param {Array} processes - A list of process objects.
- * @returns {Object} - Contains gantt chart data, process stats, and averages.
- */
 export const calculatePriorityPreemptive = (processes) => {
   // 1. Create deep copies with 'remaining' time
   let simProcesses = processes.map(p => ({
@@ -32,7 +26,7 @@ export const calculatePriorityPreemptive = (processes) => {
       }
     });
 
-    // --- 👇 THIS IS THE KEY PREEMPTION LOGIC ---
+    // --- THIS IS THE KEY PREEMPTION LOGIC ---
     // 3. Check for Preemption
     if (runningProcess) {
       // Sort ready queue by *priority*
@@ -44,15 +38,13 @@ export const calculatePriorityPreemptive = (processes) => {
         runningProcess = null;
       }
     }
-    // --- 👆 END OF PREEMPTION LOGIC ---
     
     // 4. Check if CPU is IDLE
     if (runningProcess === null) {
       if (readyQueue.length > 0) {
-        // --- 👇 THIS IS THE KEY SCHEDULING LOGIC ---
+        // --- THIS IS THE KEY SCHEDULING LOGIC ---
         // Sort ready queue by *priority*
         readyQueue.sort((a, b) => a.priority - b.priority);
-        // --- 👆 END OF SCHEDULING LOGIC ---
         
         // Get the highest priority job
         runningProcess = readyQueue.shift();

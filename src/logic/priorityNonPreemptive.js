@@ -1,9 +1,3 @@
-/**
- * Calculates Priority (Non-Preemptive) scheduling.
- * This is an "instant" calculation, not a live simulation.
- * @param {Array} processes - A list of process objects.
- * @returns {Object} - Contains gantt chart data, process stats, and averages.
- */
 export const calculatePriority = (processes) => {
   // 1. Create deep copies with 'remaining' time
   let simProcesses = processes.map(p => ({
@@ -36,10 +30,9 @@ export const calculatePriority = (processes) => {
     if (runningProcess === null) {
       if (readyQueue.length > 0) {
         
-        // --- 👇 THIS IS THE ONLY CHANGE from SJF.js ---
+        // --- THIS IS THE ONLY CHANGE from SJF.js ---
         // PRIORITY Policy: Sort by priority (lower num = higher prio)
         readyQueue.sort((a, b) => a.priority - b.priority);
-        // --- 👆 END OF CHANGE ---
         
         // Get the highest priority job
         runningProcess = readyQueue.shift();

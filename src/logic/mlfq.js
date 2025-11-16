@@ -1,21 +1,3 @@
-/**
- * Calculates MLFQ (Multilevel Feedback Queue) scheduling.
- * This is an "instant" calculation, not a live simulation.
- * Rules:
- * - 3 Queues:
- * - Q1 (Highest): Round Robin (uses timeQuantum)
- * - Q2 (Medium): Round Robin (uses timeQuantum * 2)
- * - Q3 (Lowest): FCFS
- * - All processes START in Q1.
- * - Demotion:
- * - Q1 process that doesn't finish -> moves to Q2.
- * - Q2 process that doesn't finish -> moves to Q3.
- * - Preemption: Q1 > Q2 > Q3.
- *
- * @param {Array} processes - A list of process objects.
- * @param {number} timeQuantum - The base time slice for Q1.
- * @returns {Object} - Contains gantt chart data, process stats, and averages.
- */
 export const calculateMLFQ = (processes, timeQuantum) => {
   const TQ1 = timeQuantum;
   const TQ2 = timeQuantum * 2;
@@ -26,7 +8,7 @@ export const calculateMLFQ = (processes, timeQuantum) => {
     pid: p.id.toString().slice(-4),
     remainingBurst: p.burstTime,
     hasArrived: false,
-    currentQueue: 1, // All processes start in Q1
+    currentQueue: 1, 
   }));
 
   const ganttChart = [];
@@ -40,7 +22,7 @@ export const calculateMLFQ = (processes, timeQuantum) => {
   
   let runningProcess = null;
   let completedCount = 0;
-  let currentSlice = 0; // Tracks slice for RR
+  let currentSlice = 0; 
 
   // Loop until all processes are completed
   while (completedCount < processes.length) {
@@ -49,7 +31,7 @@ export const calculateMLFQ = (processes, timeQuantum) => {
     simProcesses.forEach(p => {
       if (!p.hasArrived && p.arrivalTime <= currentTime) {
         p.hasArrived = true;
-        p.currentQueue = 1; // Set/reset to Q1 on arrival
+        p.currentQueue = 1; 
         readyQueue1.push(p);
       }
     });
@@ -77,17 +59,16 @@ export const calculateMLFQ = (processes, timeQuantum) => {
     if (runningProcess === null) {
       // Check Queues in order of priority
       if (readyQueue1.length > 0) {
-        runningProcess = readyQueue1.shift(); // Q1 (RR)
+        runningProcess = readyQueue1.shift(); 
         currentSlice = 0;
       } else if (readyQueue2.length > 0) {
-        runningProcess = readyQueue2.shift(); // Q2 (RR)
+        runningProcess = readyQueue2.shift(); 
         currentSlice = 0;
       } else if (readyQueue3.length > 0) {
-        runningProcess = readyQueue3.shift(); // Q3 (FCFS)
-        currentSlice = 0; // Not used, but good to reset
+        runningProcess = readyQueue3.shift(); 
+        currentSlice = 0; 
       }
 
-      // Set start time if it's the first time running
       if (runningProcess && processStats.find(p => p.id === runningProcess.id).startTime === -1) {
         const statIndex = processStats.findIndex(p => p.id === runningProcess.id);
         processStats[statIndex].startTime = currentTime;
@@ -143,8 +124,6 @@ export const calculateMLFQ = (processes, timeQuantum) => {
         runningProcess = null;
         currentSlice = 0;
       }
-      // Q3 is FCFS, so it just keeps running (no demotion)
-      // --- 👆 END OF DEMOTION LOGIC ---
     }
     
     // 7. Update waiting time for ALL processes in ALL ready queues

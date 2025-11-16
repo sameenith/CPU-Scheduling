@@ -1,17 +1,3 @@
-/**
- * Calculates MLQ (Multilevel Queue) scheduling.
- * This is an "instant" calculation, not a live simulation.
- * Rules:
- * - Q1 (Level 1): Round Robin (uses timeQuantum)
- * - Q2 (Level 2): FCFS
- * - Q3 (Level 3): FCFS
- * - Preemption: Q1 > Q2 > Q3. A higher priority queue process will
- * preempt any lower priority queue process.
- *
- * @param {Array} processes - A list of process objects.
- * @param {number} timeQuantum - The time slice for Q1 (RR).
- * @returns {Object} - Contains gantt chart data, process stats, and averages.
- */
 export const calculateMLQ = (processes, timeQuantum) => {
   // 1. Create deep copies
   let simProcesses = processes.map(p => ({
@@ -27,15 +13,15 @@ export const calculateMLQ = (processes, timeQuantum) => {
   let processStats = simProcesses.map(p => ({ ...p, waitingTime: 0, startTime: -1 }));
   
   let currentTime = 0;
-  // --- 👇 MLQ CHANGE: 3 Ready Queues ---
-  let readyQueue1 = []; // RR
-  let readyQueue2 = []; // FCFS
-  let readyQueue3 = []; // FCFS
-  // --- 👆 END OF CHANGE ---
+  // --- MLQ CHANGE: 3 Ready Queues ---
+  let readyQueue1 = []; 
+  let readyQueue2 = [];
+  let readyQueue3 = [];
+
   
   let runningProcess = null;
   let completedCount = 0;
-  let currentSlice = 0; // For Q1's RR
+  let currentSlice = 0; 
 
   // Loop until all processes are completed
   while (completedCount < processes.length) {
@@ -44,21 +30,18 @@ export const calculateMLQ = (processes, timeQuantum) => {
     simProcesses.forEach(p => {
       if (!p.hasArrived && p.arrivalTime <= currentTime) {
         p.hasArrived = true;
-        // --- 👇 MLQ CHANGE: Add to correct queue ---
         switch (p.queueLevel) {
           case 1: readyQueue1.push(p); break;
           case 2: readyQueue2.push(p); break;
           case 3:
           default: readyQueue3.push(p); break;
         }
-        // --- 👆 END OF CHANGE ---
+
       }
     });
 
-    // --- 👇 MLQ CHANGE: MLQ Preemption Logic ---
-    // 3. Check for Preemption
+
     if (runningProcess) {
-      // Rule 1: Q1 process arrives, preempts Q2 or Q3
       if (runningProcess.queueLevel > 1 && readyQueue1.length > 0) {
         if (runningProcess.queueLevel === 2) readyQueue2.push(runningProcess);
         else readyQueue3.push(runningProcess);
@@ -78,11 +61,11 @@ export const calculateMLQ = (processes, timeQuantum) => {
         currentSlice = 0;
       }
     }
-    // --- 👆 END OF CHANGE ---
+
     
     // 4. Check if CPU is IDLE (Scheduling Logic)
     if (runningProcess === null) {
-      // --- 👇 MLQ CHANGE: Check Queues in order of priority ---
+      // --- MLQ CHANGE: Check Queues in order of priority ---
       if (readyQueue1.length > 0) {
         // Q1 (RR) - take from front
         runningProcess = readyQueue1.shift();
@@ -96,7 +79,6 @@ export const calculateMLQ = (processes, timeQuantum) => {
         runningProcess = readyQueue3.shift();
         currentSlice = 0; // Not used
       }
-      // --- 👆 END OF CHANGE ---
 
       // Set start time if it's the first time running
       if (runningProcess) {
@@ -172,7 +154,7 @@ export const calculateMLQ = (processes, timeQuantum) => {
              end: nextArrivalTime,
              duration: nextArrivalTime - currentTime,
            });
-           currentTime = nextArrivalTime; // Jump time forward
+           currentTime = nextArrivalTime; 
        }
     }
   }

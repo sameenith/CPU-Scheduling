@@ -1,12 +1,6 @@
-/**
- * Calculates First-Come, First-Served (FCFS) scheduling.
- * @param {Array} processes - A list of process objects.
- * Each object: { id, arrivalTime, burstTime }
- * @returns {Object} - Contains gantt chart data, process stats, and averages.
- */
+
 export const calculateFCFS = (processes) => {
   // 1. Create a deep copy to avoid mutating the original state
-  //    And sort by arrivalTime to ensure FCFS order.
   const sortedProcesses = [...processes]
     .map((p) => ({ ...p, pid: p.id.toString().slice(-4) })) // Use short PID for display
     .sort((a, b) => a.arrivalTime - b.arrivalTime);
@@ -26,7 +20,7 @@ export const calculateFCFS = (processes) => {
         start: currentTime,
         end: process.arrivalTime,
         duration: process.arrivalTime - currentTime,
-        color: 'bg-gray-500', // Idle color
+        color: 'bg-gray-500', 
       });
       currentTime = process.arrivalTime;
     }
@@ -57,7 +51,7 @@ export const calculateFCFS = (processes) => {
     // 6. Update totals
     totalWaitingTime += waitingTime;
     totalTurnaroundTime += turnaroundTime;
-    currentTime = completionTime; // Move time to the end of this process
+    currentTime = completionTime;
   }
 
   // 7. Calculate averages

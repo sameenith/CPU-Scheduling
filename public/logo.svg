@@ -1,0 +1,22 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Define the gradient from our app's theme -->
+  <defs>
+    <linearGradient id="logoGradient" x1="0" y1="0" x2="64" y2="64">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A78BFA;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Main "CPU Core" shape -->
+  <rect width="64" height="64" rx="12" fill="url(#logoGradient)"/>
+  
+  <!-- "Processes" (blocks) in a queue, creating negative space -->
+  <g transform="translate(12 12)">
+    <!-- Process 1 (long) -->
+    <rect x="0" y="0" width="40" height="8" rx="4" fill="white"/>
+    <!-- Process 2 (medium) -->
+    <rect x="0" y="12" width="28" height="8" rx="4" fill="white"/>
+    <!-- Process 3 (short) -->
+    <rect x="0" y="24" width="16" height="8" rx="4" fill="white"/>
+  </g>
+</svg>

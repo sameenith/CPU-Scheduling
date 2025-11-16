@@ -1,9 +1,3 @@
-/**
- * Calculates SRTF (SJF Preemptive) scheduling.
- * This is an "instant" calculation, not a live simulation.
- * @param {Array} processes - A list of process objects.
- * @returns {Object} - Contains gantt chart data, process stats, and averages.
- */
 export const calculateSRTF = (processes) => {
   // 1. Create deep copies with 'remaining' time
   let simProcesses = processes.map(p => ({

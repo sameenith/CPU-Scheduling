@@ -1,10 +1,3 @@
-/**
- * Calculates Round Robin (RR) scheduling.
- * This is an "instant" calculation, not a live simulation.
- * @param {Array} processes - A list of process objects.
- * @param {number} timeQuantum - The time slice for each process.
- * @returns {Object} - Contains gantt chart data, process stats, and averages.
- */
 export const calculateRR = (processes, timeQuantum) => {
   // 1. Create deep copies with 'remaining' time
   let simProcesses = processes.map(p => ({
@@ -22,10 +15,10 @@ export const calculateRR = (processes, timeQuantum) => {
   let runningProcess = null;
   let completedCount = 0;
   
-  // --- 👇 NEW LOGIC FOR RR ---
+  // ---  NEW LOGIC FOR RR ---
   // This tracks the time slice for the currently running process
   let currentSlice = 0; 
-  // --- 👆 END OF NEW LOGIC ---
+
 
   // Loop until all processes are completed
   while (completedCount < processes.length) {
@@ -38,7 +31,7 @@ export const calculateRR = (processes, timeQuantum) => {
       }
     });
 
-    // --- 👇 NEW LOGIC FOR RR PREEMPTION ---
+    // --- NEW LOGIC FOR RR PREEMPTION ---
     // 3. Check for Time Quantum Preemption
     if (runningProcess) {
       currentSlice++; // Increment the time slice counter
@@ -50,7 +43,6 @@ export const calculateRR = (processes, timeQuantum) => {
         currentSlice = 0; // Reset the slice counter
       }
     }
-    // --- 👆 END OF NEW LOGIC ---
     
     // 4. Check if CPU is IDLE
     if (runningProcess === null) {
